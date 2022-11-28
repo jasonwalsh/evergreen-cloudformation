@@ -1,24 +1,24 @@
-package delete
+package commands
 
 import (
 	"github.com/aws/aws-sdk-go/service/cloudformation"
 )
 
-type command struct {
+type DeleteCommand struct {
 	client *cloudformation.CloudFormation
 	input  *cloudformation.DeleteStackInput
 }
 
-func New(client *cloudformation.CloudFormation) *command {
+func DeleteStack(client *cloudformation.CloudFormation) Command {
 	var input cloudformation.DeleteStackInput
-	return &command{client, &input}
+	return &DeleteCommand{client, &input}
 }
 
-func (c *command) BuildRequest() {
+func (c *DeleteCommand) BuildRequest() {
 	c.input.SetStackName("")
 }
 
-func (c *command) WaitUntilFinished() error {
+func (c *DeleteCommand) WaitUntilFinished() error {
 	var input cloudformation.DescribeStacksInput
 	input.SetStackName(*c.input.StackName)
 	if err := c.client.WaitUntilStackDeleteComplete(&input); err != nil {
@@ -27,7 +27,7 @@ func (c *command) WaitUntilFinished() error {
 	return nil
 }
 
-func (c *command) SendSync() error {
+func (c *DeleteCommand) SendSync() error {
 	if _, err := c.client.DeleteStack(c.input); err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func (c *command) SendSync() error {
 	return nil
 }
 
-func (c *command) Execute() error {
+func (c *DeleteCommand) Execute() error {
 	c.BuildRequest()
 	if err := c.SendSync(); err != nil {
 		return err
@@ -45,6 +45,6 @@ func (c *command) Execute() error {
 	return nil
 }
 
-func (c *command) SetParameters(v map[string]string) {
+func (c *DeleteCommand) SetParameters(v map[string]string) {
 	return
 }

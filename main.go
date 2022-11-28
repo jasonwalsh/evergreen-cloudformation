@@ -4,34 +4,20 @@ import (
 	"flag"
 	"log"
 
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudformation"
 	"github.com/jasonwalsh/cloudformation/commands"
 )
 
-var delete bool
+var action commands.Action
 var project string
 
 func init() {
-	flag.BoolVar(&delete, "delete", false, "")
+	flag.Var(&action, "action", "")
 	flag.StringVar(&project, "project", "", "")
-}
-
-func NewSession() *session.Session {
-	return session.Must(session.NewSessionWithOptions(session.Options{
-		SharedConfigState: session.SharedConfigEnable,
-	}))
 }
 
 func main() {
 	flag.Parse()
-	cloudformation := cloudformation.New(NewSession())
-	var command commands.Command
-	if delete {
-		command = commands.DeleteStack(cloudformation)
-	} else {
-		command = commands.CreateStack(cloudformation)
-	}
+	command := commands.New(action)
 	command.SetParameters(map[string]string{
 		"BucketName": project,
 	})

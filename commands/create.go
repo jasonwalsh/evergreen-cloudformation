@@ -1,4 +1,4 @@
-package create
+package commands
 
 import (
 	"fmt"
@@ -71,28 +71,28 @@ var templateBody = `
 }
 `
 
-type command struct {
+type CreateCommand struct {
 	client *cloudformation.CloudFormation
 	input  *cloudformation.CreateStackInput
 }
 
-func New(client *cloudformation.CloudFormation) *command {
+func CreateStack(client *cloudformation.CloudFormation) Command {
 	var input cloudformation.CreateStackInput
-	return &command{client, &input}
+	return &CreateCommand{client, &input}
 }
 
 func UniqueName() string {
 	return fmt.Sprintf("id-%s", strconv.FormatInt(time.Now().UnixNano(), 10))
 }
 
-func (c *command) BuildRequest() {
+func (c *CreateCommand) BuildRequest() {
 	c.input.SetCapabilities([]*string{aws.String(cloudformation.CapabilityCapabilityNamedIam)})
 	c.input.SetEnableTerminationProtection(false)
 	c.input.SetStackName(UniqueName())
 	c.input.SetTemplateBody(templateBody)
 }
 
-func (c *command) WaitUntilFinished() error {
+func (c *CreateCommand) WaitUntilFinished() error {
 	var input cloudformation.DescribeStacksInput
 	input.SetStackName(*c.input.StackName)
 	if err := c.client.WaitUntilStackCreateComplete(&input); err != nil {
@@ -101,7 +101,7 @@ func (c *command) WaitUntilFinished() error {
 	return nil
 }
 
-func (c *command) SendSync() error {
+func (c *CreateCommand) SendSync() error {
 	if _, err := c.client.CreateStack(c.input); err != nil {
 		return err
 	}
@@ -111,7 +111,7 @@ func (c *command) SendSync() error {
 	return nil
 }
 
-func (c *command) Execute() error {
+func (c *CreateCommand) Execute() error {
 	c.BuildRequest()
 	if err := c.SendSync(); err != nil {
 		return err
@@ -119,7 +119,7 @@ func (c *command) Execute() error {
 	return nil
 }
 
-func (c *command) SetParameters(v map[string]string) {
+func (c *CreateCommand) SetParameters(v map[string]string) {
 	parameters := make([]*cloudformation.Parameter, len(v))
 	for key, value := range v {
 		parameter := cloudformation.Parameter{
