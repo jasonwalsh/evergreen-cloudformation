@@ -1,0 +1,59 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "BucketName": {
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "AccessKey": {
+      "Properties": {
+        "UserName": {
+          "Ref": "User"
+        }
+      },
+      "Type": "AWS::IAM::AccessKey"
+    },
+    "Bucket": {
+      "Properties": {
+        "BucketName": {
+          "Ref": "BucketName"
+        }
+      },
+      "Type": "AWS::S3::Bucket"
+    },
+    "BucketPolicy": {
+      "Properties": {
+        "Bucket": {
+          "Ref": "Bucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": ["s3:*"],
+              "Effect": "Allow",
+              "Principal": {
+                "AWS": {
+                  "Fn::GetAtt": ["User", "Arn"]
+                }
+              },
+              "Resource": {
+                "Fn::GetAtt": ["Bucket", "Arn"]
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        }
+      },
+      "Type": "AWS::S3::BucketPolicy"
+    },
+    "User": {
+      "Properties": {
+        "UserName": {
+          "Ref": "Bucket"
+        }
+      },
+      "Type": "AWS::IAM::User"
+    }
+  }
+}
