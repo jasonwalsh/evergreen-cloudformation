@@ -4,10 +4,10 @@ import (
 	"flag"
 	"log"
 
-	"github.com/jasonwalsh/cloudformation/commands"
+	"github.com/jasonwalsh/cloudformation/command"
 )
 
-var action commands.Action
+var action command.Action
 var project string
 
 func init() {
@@ -17,7 +17,7 @@ func init() {
 
 func main() {
 	flag.Parse()
-	command := commands.New(action)
+	command := command.New(action)
 	command.SetParameters(map[string]string{
 		"BucketName": project,
 	})
